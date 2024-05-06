@@ -1,4 +1,4 @@
-module go.etcd.io/etcd/v3
+module github.com/ArielSzekely/etcd/v3
 
 go 1.21
 
