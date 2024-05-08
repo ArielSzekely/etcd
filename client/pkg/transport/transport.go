@@ -20,6 +20,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"log"
 )
 
 type unixTransport struct{ *http.Transport }
@@ -48,7 +50,14 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 	}
 
 	dialContext := func(ctx context.Context, net, addr string) (net.Conn, error) {
-		return dialer.DialContext(ctx, "unix", addr)
+		log.Printf("XXXX ABOUT TO DIALCTX")
+		c, err := dialer.DialContext(ctx, "unix", addr)
+		if err != nil {
+			log.Printf("XXXX DIALCTX ERR %v", err)
+		} else {
+			log.Printf("XXXX DIALCTX SUCCESS")
+		}
+		return c, err
 	}
 	tu := &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
