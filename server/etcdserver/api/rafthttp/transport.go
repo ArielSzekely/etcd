@@ -158,6 +158,7 @@ func (t *Transport) Start() error {
 	if t.DialRetryFrequency == 0 {
 		t.DialRetryFrequency = rate.Every(100 * time.Millisecond)
 	}
+	log.Printf("XXXX START TRANSPORT SUCCESS")
 	return nil
 }
 

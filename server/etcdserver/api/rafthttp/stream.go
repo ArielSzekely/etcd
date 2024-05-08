@@ -25,6 +25,8 @@ import (
 	"sync"
 	"time"
 
+	"log"
+
 	"go.etcd.io/etcd/api/v3/version"
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	"go.etcd.io/etcd/client/pkg/v3/types"
@@ -598,11 +600,14 @@ func (cr *streamReader) dial(t streamType) (io.ReadCloser, error) {
 	}
 	cr.mu.Unlock()
 
+	log.Printf("XXXX Pre stream RT")
 	resp, err := cr.tr.streamRt.RoundTrip(req)
 	if err != nil {
+		log.Printf("XXXX Post stream RT ERR")
 		cr.picker.unreachable(u)
 		return nil, err
 	}
+	log.Printf("XXXX Post stream RT SUCCESS")
 
 	rv := serverVersion(resp.Header)
 	lv := semver.Must(semver.NewVersion(version.Version))
