@@ -18,6 +18,8 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"log"
 )
 
 // NewTimeoutTransport returns a transport created using the given TLS info.
@@ -39,7 +41,7 @@ func NewTimeoutTransport(info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.
 		tr.MaxIdleConnsPerHost = 1024
 	}
 
-	tr.Dial = (&rwTimeoutDialer{
+	dial := (&rwTimeoutDialer{
 		Dialer: net.Dialer{
 			Timeout:   dialtimeoutd,
 			KeepAlive: 30 * time.Second,
@@ -47,5 +49,16 @@ func NewTimeoutTransport(info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.
 		rdtimeoutd: rdtimeoutd,
 		wtimeoutd:  wtimeoutd,
 	}).Dial
+
+	tr.Dial = func(network, address string) (net.Conn, error) {
+		log.Printf("XXXX ABOUT TO DIAL")
+		c, err := dial(network, address)
+		if err != nil {
+			log.Printf("XXXX DIAL ERR %v", err)
+		} else {
+			log.Printf("XXXX DIAL SUCCESS")
+		}
+		return c, err
+	}
 	return tr, nil
 }
