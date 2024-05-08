@@ -32,6 +32,8 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"go.etcd.io/etcd/client/pkg/v3/fileutil"
 	"go.etcd.io/etcd/client/pkg/v3/tlsutil"
 
@@ -103,6 +105,7 @@ func newListener(addr, scheme string, opts ...ListenerOption) (net.Listener, err
 }
 
 func newKeepAliveListener(cfg *net.ListenConfig, addr string) (ln net.Listener, err error) {
+	log.Printf("XXXX LISTEN cfg %v", cfg)
 	if cfg != nil {
 		ln, err = cfg.Listen(context.TODO(), "tcp", addr)
 	} else {
