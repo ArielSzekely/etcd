@@ -135,14 +135,18 @@ type Transport struct {
 func (t *Transport) Start() error {
 	log.Printf("XXXX STARTING TRANSPORT")
 	var err error
+	log.Printf("XXXX STREAM RT")
 	t.streamRt, err = newStreamRoundTripper(t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
+	log.Printf("XXXX STREAM RT SUCCESS")
+	log.Printf("XXXX PIPELINE RT")
 	t.pipelineRt, err = NewRoundTripper(t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
+	log.Printf("XXXX PIPELINE RT SUCCESS")
 	t.remotes = make(map[types.ID]*remote)
 	t.peers = make(map[types.ID]Peer)
 	t.pipelineProber = probing.NewProber(t.pipelineRt)
