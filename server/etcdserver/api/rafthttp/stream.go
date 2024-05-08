@@ -603,7 +603,7 @@ func (cr *streamReader) dial(t streamType) (io.ReadCloser, error) {
 	log.Printf("XXXX Pre stream RT")
 	resp, err := cr.tr.streamRt.RoundTrip(req)
 	if err != nil {
-		log.Printf("XXXX Post stream RT ERR")
+		log.Printf("XXXX Post stream RT ERR: %v", err)
 		cr.picker.unreachable(u)
 		return nil, err
 	}
