@@ -51,6 +51,9 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 	t := &http.Transport{
 		Proxy:       http.ProxyFromEnvironment,
 		DialContext: dialContext2,
+		Dial: func(net, addr string) (net.Conn, error) {
+			log.Fatalf("XXXX Http transport dial")
+		},
 		// value taken from http.DefaultTransport
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     cfg,
