@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	"log"
+
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	"go.etcd.io/etcd/client/pkg/v3/types"
 	"go.etcd.io/etcd/raft/v3"
@@ -131,6 +133,7 @@ type Transport struct {
 }
 
 func (t *Transport) Start() error {
+	log.Printf("XXXX STARTING TRANSPORT")
 	var err error
 	t.streamRt, err = newStreamRoundTripper(t.TLSInfo, t.DialTimeout)
 	if err != nil {
