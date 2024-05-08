@@ -32,13 +32,25 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 		return nil, err
 	}
 
+	dc2 := (&net.Dialer{
+		Timeout: dialtimeoutd,
+		// value taken from http.DefaultTransport
+		KeepAlive: 30 * time.Second,
+	}).DialContext
+	dialContext2 := func(ctx context.Context, net, addr string) (net.Conn, error) {
+		log.Printf("XXXX ABOUT TO DIALCTX2")
+		c, err := dc2(ctx, net, addr)
+		if err != nil {
+			log.Printf("XXXX DIALCTX2 ERR %v", err)
+		} else {
+			log.Printf("XXXX DIALCTX2 SUCCESS")
+		}
+		return c, err
+	}
+
 	t := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout: dialtimeoutd,
-			// value taken from http.DefaultTransport
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
+		Proxy:       http.ProxyFromEnvironment,
+		DialContext: dialContext2,
 		// value taken from http.DefaultTransport
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     cfg,
