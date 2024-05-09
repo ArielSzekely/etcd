@@ -1,4 +1,4 @@
-module go.etcd.io/etcd/client/v2
+module github.com/ArielSzekely/etcd/client/v2
 
 go 1.21
 
