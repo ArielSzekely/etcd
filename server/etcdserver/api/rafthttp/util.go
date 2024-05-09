@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"go.etcd.io/etcd/api/v3/version"
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	"go.etcd.io/etcd/client/pkg/v3/types"
@@ -57,6 +59,7 @@ func NewRoundTripper(tlsInfo transport.TLSInfo, dialTimeout time.Duration) (http
 // find out broken status, which minimizes the number of messages
 // sent on broken connection.
 func newStreamRoundTripper(tlsInfo transport.TLSInfo, dialTimeout time.Duration) (http.RoundTripper, error) {
+	log.Printf("XXXX new streamRoundTripper")
 	return transport.NewTimeoutTransport(tlsInfo, dialTimeout, ConnReadTimeout, ConnWriteTimeout)
 }
 
