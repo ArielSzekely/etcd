@@ -27,6 +27,7 @@ import (
 // it will return timeout error.
 // If read/write timeout is set, transport will not be able to reuse connection.
 func NewTimeoutTransport(info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.Duration) (*http.Transport, error) {
+	log.Printf("XXXX NEW TIMEOUT TRANSPORT")
 	tr, err := NewTransport(info, dialtimeoutd)
 	if err != nil {
 		return nil, err
