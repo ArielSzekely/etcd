@@ -16,11 +16,10 @@ package rafthttp
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"sync"
 	"time"
-
-	"log"
 
 	"github.com/ArielSzekely/etcd/client/pkg/v3/transport"
 	"go.etcd.io/etcd/client/pkg/v3/types"
@@ -104,6 +103,8 @@ type Transport struct {
 	// a distinct rate limiter is created per every peer (default value: 10 events/sec)
 	DialRetryFrequency rate.Limit
 
+	DialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error)
+
 	TLSInfo transport.TLSInfo // TLS information used when creating connection
 
 	ID          types.ID   // local member ID
@@ -133,20 +134,15 @@ type Transport struct {
 }
 
 func (t *Transport) Start() error {
-	log.Printf("XXXX STARTING TRANSPORT")
 	var err error
-	log.Printf("XXXX STREAM RT")
-	t.streamRt, err = newStreamRoundTripper(t.TLSInfo, t.DialTimeout)
+	t.streamRt, err = newStreamRoundTripper(t.DialContextFunc, t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
-	log.Printf("XXXX STREAM RT SUCCESS")
-	log.Printf("XXXX PIPELINE RT")
-	t.pipelineRt, err = NewRoundTripper(t.TLSInfo, t.DialTimeout)
+	t.pipelineRt, err = NewRoundTripper(t.DialContextFunc, t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
-	log.Printf("XXXX PIPELINE RT SUCCESS")
 	t.remotes = make(map[types.ID]*remote)
 	t.peers = make(map[types.ID]Peer)
 	t.pipelineProber = probing.NewProber(t.pipelineRt)
@@ -158,7 +154,6 @@ func (t *Transport) Start() error {
 	if t.DialRetryFrequency == 0 {
 		t.DialRetryFrequency = rate.Every(100 * time.Millisecond)
 	}
-	log.Printf("XXXX START TRANSPORT SUCCESS")
 	return nil
 }
 
