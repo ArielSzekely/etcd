@@ -15,20 +15,18 @@
 package transport
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"time"
-
-	"log"
 )
 
 // NewTimeoutTransport returns a transport created using the given TLS info.
 // If read/write on the created connection blocks longer than its time limit,
 // it will return timeout error.
 // If read/write timeout is set, transport will not be able to reuse connection.
-func NewTimeoutTransport(info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.Duration) (*http.Transport, error) {
-	log.Printf("XXXX NEW TIMEOUT TRANSPORT")
-	tr, err := NewTransport(info, dialtimeoutd)
+func NewTimeoutTransport(dialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error), info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.Duration) (*http.Transport, error) {
+	tr, err := NewTransport(dialContextFunc, info, dialtimeoutd)
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +50,7 @@ func NewTimeoutTransport(info TLSInfo, dialtimeoutd, rdtimeoutd, wtimeoutd time.
 	}).Dial
 
 	tr.Dial = func(network, address string) (net.Conn, error) {
-		log.Printf("XXXX ABOUT TO DIAL")
 		c, err := dial(network, address)
-		if err != nil {
-			log.Printf("XXXX DIAL ERR %v", err)
-		} else {
-			log.Printf("XXXX DIAL SUCCESS")
-		}
 		return c, err
 	}
 	return tr, nil

@@ -17,8 +17,6 @@ package transport
 import (
 	"net"
 	"time"
-
-	"log"
 )
 
 type rwTimeoutDialer struct {
@@ -28,7 +26,6 @@ type rwTimeoutDialer struct {
 }
 
 func (d *rwTimeoutDialer) Dial(network, address string) (net.Conn, error) {
-	log.Printf("XXXX DIAL %v", address)
 	conn, err := d.Dialer.Dial(network, address)
 	tconn := &timeoutConn{
 		readTimeout:  d.rdtimeoutd,

@@ -20,31 +20,27 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"log"
 )
 
 type unixTransport struct{ *http.Transport }
 
-func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, error) {
-	log.Printf("XXXX NEW TRANSPORT")
+func NewTransport(dialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error), info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, error) {
 	cfg, err := info.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	dc2 := (&net.Dialer{
-		Timeout: dialtimeoutd,
-		// value taken from http.DefaultTransport
-		KeepAlive: 30 * time.Second,
-	}).DialContext
+	if dialContextFunc == nil {
+		dialContextFunc = (&net.Dialer{
+			Timeout: dialtimeoutd,
+			// value taken from http.DefaultTransport
+			KeepAlive: 30 * time.Second,
+		}).DialContext
+	}
 	dialContext2 := func(ctx context.Context, net, addr string) (net.Conn, error) {
-		log.Printf("XXXX ABOUT TO DIALCTX2")
-		c, err := dc2(ctx, net, addr)
+		c, err := dialContextFunc(ctx, net, addr)
 		if err != nil {
-			log.Printf("XXXX DIALCTX2 ERR %v", err)
 		} else {
-			log.Printf("XXXX DIALCTX2 SUCCESS")
 		}
 		return c, err
 	}
@@ -53,7 +49,6 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 		Proxy:       http.ProxyFromEnvironment,
 		DialContext: dialContext2,
 		Dial: func(net, addr string) (net.Conn, error) {
-			log.Fatalf("XXXX Http transport dial")
 			return nil, nil
 		},
 		// value taken from http.DefaultTransport
@@ -67,12 +62,9 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 	}
 
 	dialContext := func(ctx context.Context, net, addr string) (net.Conn, error) {
-		log.Printf("XXXX ABOUT TO DIALCTX")
 		c, err := dialer.DialContext(ctx, "unix", addr)
 		if err != nil {
-			log.Printf("XXXX DIALCTX ERR %v", err)
 		} else {
-			log.Printf("XXXX DIALCTX SUCCESS")
 		}
 		return c, err
 	}
@@ -96,7 +88,6 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 }
 
 func (urt *unixTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	log.Printf("XXXX Http round trip")
 	url := *req.URL
 	req.URL = &url
 	req.URL.Scheme = strings.Replace(req.URL.Scheme, "unix", "http", 1)
