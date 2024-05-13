@@ -24,19 +24,26 @@ import (
 
 type unixTransport struct{ *http.Transport }
 
-func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, error) {
+func NewTransport(dialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error), info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, error) {
 	cfg, err := info.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	t := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
+	var dialContext func(ctx context.Context, net, addr string) (net.Conn, error)
+	if dialContextFunc == nil {
+		dialContext = (&net.Dialer{
 			Timeout: dialtimeoutd,
 			// value taken from http.DefaultTransport
 			KeepAlive: 30 * time.Second,
-		}).DialContext,
+		}).DialContext
+	} else {
+		dialContext = dialContextFunc
+	}
+
+	t := &http.Transport{
+		Proxy:       http.ProxyFromEnvironment,
+		DialContext: dialContext,
 		// value taken from http.DefaultTransport
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     cfg,
@@ -47,7 +54,7 @@ func NewTransport(info TLSInfo, dialtimeoutd time.Duration) (*http.Transport, er
 		KeepAlive: 30 * time.Second,
 	}
 
-	dialContext := func(ctx context.Context, net, addr string) (net.Conn, error) {
+	dialContext = func(ctx context.Context, net, addr string) (net.Conn, error) {
 		return dialer.DialContext(ctx, "unix", addr)
 	}
 	tu := &http.Transport{

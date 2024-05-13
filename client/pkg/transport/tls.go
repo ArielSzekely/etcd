@@ -17,14 +17,15 @@ package transport
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 )
 
 // ValidateSecureEndpoints scans the given endpoints against tls info, returning only those
 // endpoints that could be validated as secure.
-func ValidateSecureEndpoints(tlsInfo TLSInfo, eps []string) ([]string, error) {
-	t, err := NewTransport(tlsInfo, 5*time.Second)
+func ValidateSecureEndpoints(dialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error), tlsInfo TLSInfo, eps []string) ([]string, error) {
+	t, err := NewTransport(dialContextFunc, tlsInfo, 5*time.Second)
 	if err != nil {
 		return nil, err
 	}

@@ -16,6 +16,7 @@ package rafthttp
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -97,7 +98,8 @@ type Transporter interface {
 type Transport struct {
 	Logger *zap.Logger
 
-	DialTimeout time.Duration // maximum duration before timing out dial of the request
+	DialContextFunc func(ctx context.Context, net, addr string) (net.Conn, error)
+	DialTimeout     time.Duration // maximum duration before timing out dial of the request
 	// DialRetryFrequency defines the frequency of streamReader dial retrial attempts;
 	// a distinct rate limiter is created per every peer (default value: 10 events/sec)
 	DialRetryFrequency rate.Limit
@@ -132,11 +134,11 @@ type Transport struct {
 
 func (t *Transport) Start() error {
 	var err error
-	t.streamRt, err = newStreamRoundTripper(t.TLSInfo, t.DialTimeout)
+	t.streamRt, err = newStreamRoundTripper(t.DialContextFunc, t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
-	t.pipelineRt, err = NewRoundTripper(t.TLSInfo, t.DialTimeout)
+	t.pipelineRt, err = NewRoundTripper(t.DialContextFunc, t.TLSInfo, t.DialTimeout)
 	if err != nil {
 		return err
 	}
