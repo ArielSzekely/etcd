@@ -1,4 +1,4 @@
-module github.com/ArielSzekely/etcd/server/v3.5.14-rafthttp-transport-npd
+module github.com/ArielSzekely/etcd/server/v3
 
 go 1.21
 
